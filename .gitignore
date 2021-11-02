@@ -1,0 +1,5 @@
+*.elf
+limine/
+img_mount/
+*.o
+*.d
