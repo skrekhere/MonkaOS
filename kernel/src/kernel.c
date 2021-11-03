@@ -1,7 +1,7 @@
+
 #include <stdint.h>
 #include <stddef.h>
 #include <stivale2.h>
-
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
 static uint8_t stack[8192];
@@ -15,18 +15,26 @@ static uint8_t stack[8192];
 // especially during early boot.
 // Read the notes about the requirements for using this feature below this
 // code block.
+static struct stivale2_tag paging5_hdr_tag = {
+    // Identification constant defined in stivale2.h and the specification.
+    .identifier = STIVALE2_HEADER_TAG_5LV_PAGING_ID,
+    // If next is 0, it marks the end of the linked list of header tags.
+    .next = 0
+};
+
 static struct stivale2_header_tag_terminal terminal_hdr_tag = {
     // All tags need to begin with an identifier and a pointer to the next tag.
     .tag = {
         // Identification constant defined in stivale2.h and the specification.
         .identifier = STIVALE2_HEADER_TAG_TERMINAL_ID,
         // If next is 0, it marks the end of the linked list of header tags.
-        .next = 0
+        .next = (uint64_t)&paging5_hdr_tag
     },
     // The terminal header tag possesses a flags field, leave it as 0 for now
     // as it is unused.
     .flags = 0
 };
+
 
 // We are now going to define a framebuffer header tag.
 // This tag tells the bootloader that we want a graphical framebuffer instead
@@ -118,8 +126,16 @@ void _start(struct stivale2_struct *stivale2_struct) {
     
     // We should now be able to call the above function pointer to print out
     // a simple "Hello World" to screen.
-    term_write("Hello World", 11);
-    term_write(" YO", 3);
+    term_write("Bootloader Brand: ", 19);
+    term_write(stivale2_struct->bootloader_brand, 64);
+    term_write("\n", 1);
+
+    term_write("Booloader Version: ", 20);
+    term_write(stivale2_struct->bootloader_version, 64);
+    term_write("\n", 1);
+
+
+    
      
     // We're done, just hang...
     for (;;) {

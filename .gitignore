@@ -3,3 +3,4 @@ limine/
 img_mount/
 *.o
 *.d
+*.o.log
